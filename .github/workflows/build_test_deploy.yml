@@ -11,11 +11,6 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    services:
-      selenium:
-        image: selenium/standalone-${{ github.event.inputs.browser }}
-        options: --shm-size=2gb
-
     steps:
     - name: Checkout repo
       uses: actions/checkout@v4
@@ -23,11 +18,17 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 6.0.x
-    - name: Restore dependencies
+    - name: Install Chrome
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+    - name: Install dependencies
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
       env:
           BROWSER: ${{ github.event.inputs.browser }}
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      env: 
+        CHROMEWEBDRIVER: /usr/bin/google-chrome
+      run: dotnet test --verbosity normal
